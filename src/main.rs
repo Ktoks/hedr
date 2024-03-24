@@ -10,7 +10,7 @@ use clap::Parser;
 #[command(long_about = None)]
 #[command(version = ".1")]
 struct Args {
-    fname: String,
+    fnames: Vec<String>,
 
     #[arg(short, long, default_value_t = 10)]
     num_of_lines: u8,
@@ -22,25 +22,58 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let mut reader = BufReader::new(File::open(args.fname).expect("open failed"));
+    if args.fnames.len() > 1 {
+        for fname in args.fnames {
+            println!("==> {} <==", fname);
+            let mut reader = BufReader::new(File::open(fname).expect("open failed"));
 
-    if args.character_length > 0 {
-        let mut iterator = 0;
-        for line in reader.lines() {
-            for car in line.expect("lines failed").chars() {
+            if args.character_length > 0 {
+                let mut iterator = 0;
+                for line in reader.lines() {
+                    for car in line.expect("lines failed").chars() {
+                        if iterator >= args.character_length {
+                            break;
+                        }
+                        print!("{}", car);
+                        iterator+=1;
+                    }
+                    if iterator >= args.character_length {
+                        break;
+                    }
+                }
+            } else {
+                for _ in 0..args.num_of_lines {
+                    let mut line = String::new();
+                    reader.read_line(&mut line).unwrap();
+                    println!("{}", line);
+                }
+            }
+        println!();
+        }
+    } else {
+        let mut reader = BufReader::new(File::open(&args.fnames[0]).expect("open failed"));
+
+        if args.character_length > 0 {
+            let mut iterator = 0;
+            for line in reader.lines() {
+                for car in line.expect("lines failed").chars() {
+                    if iterator >= args.character_length {
+                        break;
+                    }
+                    print!("{}", car);
+                    iterator+=1;
+                }
                 if iterator >= args.character_length {
                     break;
                 }
-                print!("{}", car);
-                iterator+=1;
             }
         }
-    }
-    else {
-        for _ in 0..args.num_of_lines {
-            let mut line = String::new();
-            reader.read_line(&mut line).unwrap();
-            println!("{}", line);
+        else {
+            for _ in 0..args.num_of_lines {
+                let mut line = String::new();
+                reader.read_line(&mut line).unwrap();
+                println!("{}", line);
+            }
         }
     }
 }
