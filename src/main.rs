@@ -13,10 +13,10 @@ struct Args {
     fnames: Vec<String>,
 
     #[arg(short, long, default_value_t = 10)]
-    num_of_lines: u8,
+    number_of_lines: u32,
 
     #[arg(short, long, default_value_t = 0)]
-    character_length: u8,
+    character_count: u32,
 }
 
 fn main() {
@@ -25,32 +25,34 @@ fn main() {
     if args.fnames.len() > 1 {
         for fname in args.fnames {
             println!("==> {} <==", fname);
-            some(args.character_length, args.num_of_lines, &fname);
+            output_head_of_file(args.character_count, args.number_of_lines, &fname);
             println!();
         }
     } else {
-        some(args.character_length, args.num_of_lines, &args.fnames[0]);
+        output_head_of_file(args.character_count, args.number_of_lines, &args.fnames[0]);
     }
 }
 
-fn some(character_length: u8, num_of_lines: u8, fname: &str) {
-    let mut reader = BufReader::new(File::open(fname).expect("open failed"));
-    if character_length > 0 {
+fn output_head_of_file(character_count: u32, number_of_lines: u32, fname: &str) {
+    let mut reader = BufReader::new(File::open(fname).expect("Opening fname failed"));
+    if character_count > 0 {
         let mut iterator = 0;
         for line in reader.lines() {
-            for car in line.expect("lines failed").chars() {
-                if iterator >= character_length {
+            for character in line.expect("Reading lines failed").chars() {
+                if iterator >= character_count {
                     break;
                 }
-                print!("{}", car);
+                print!("{}", character);
                 iterator+=1;
             }
-            if iterator >= character_length {
+            println!(); // adds newline back in - feels hacky, will try and fix
+
+            if iterator >= character_count {
                 break;
             }
         }
     } else {
-        for _ in 0..num_of_lines {
+        for _ in 0..number_of_lines {
             let mut line = String::new();
             reader.read_line(&mut line).unwrap();
             println!("{}", line);
